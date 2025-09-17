@@ -19,3 +19,5 @@ services:
       ECHO_TEXT: "hello rofl world (${ROFL_PROXY_HOST})"
     ports:
       - "5678:5678"
+    annotations:
+      net.oasis.proxy.ports.5678.custom_domain: demo.rofl.build
