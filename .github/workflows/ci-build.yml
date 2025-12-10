@@ -1,5 +1,5 @@
 
-  name: Build ROFL
+  name: ROFL tests
 
   on:
     push:
@@ -19,7 +19,22 @@
           with:
             network: testnet
             deployment: testnet
-            offline: true
+            skip_update: true
+            skip_deploy: true
+
+    verify:
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+
+        - name: Verify ROFL
+          uses: oasisprotocol/build-deploy-rofl-action@ptrus/initial-impl
+          with:
+            network: testnet
+            deployment: testnet
+            offline: false
+            verify: true
             skip_update: true
             skip_deploy: true
 
