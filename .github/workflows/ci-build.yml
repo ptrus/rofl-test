@@ -1,0 +1,25 @@
+
+  name: Build ROFL
+
+  on:
+    push:
+      branches: [main]
+    pull_request:
+    workflow_dispatch:
+
+  jobs:
+    build:
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+
+        - name: Build ROFL
+          uses: oasisprotocol/build-deploy-rofl-action@ptrus/initial-impl
+          with:
+            network: testnet
+            deployment: testnet
+            offline: true
+            skip_update: true
+            skip_deploy: true
+
