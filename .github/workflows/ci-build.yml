@@ -22,10 +22,11 @@ on:
 
 jobs:
   # ============================================================================
-  # SCENARIO 1: Validate Only (fastest)
+  # SCENARIO 1: Validate Only
   # ============================================================================
-  # Use for: Quick CI checks on every PR
-  # What it does: Validates rofl.yaml and compose.yaml without building
+  # Web2 equivalent: Linting or config validation (like `docker-compose config`)
+  #
+  # Use this to catch config errors early without waiting for a full build.
   validate:
     name: Validate ROFL Config
     runs-on: ubuntu-latest
@@ -43,8 +44,9 @@ jobs:
   # ============================================================================
   # SCENARIO 2: Build Only
   # ============================================================================
-  # Use for: CI builds to ensure the ROFL app compiles successfully
-  # What it does: Builds the ORC bundle without deploying
+  # Web2 equivalent: `docker build` without `docker push`
+  #
+  # Use this to verify your app compiles successfully.
   build:
     name: Build ROFL App
     runs-on: ubuntu-latest
@@ -57,15 +59,16 @@ jobs:
         with:
           network: testnet
           deployment: testnet
-          offline: true
           skip_update: true
           skip_deploy: true
 
   # ============================================================================
   # SCENARIO 3: Build + Verify (reproducible builds)
   # ============================================================================
-  # Use for: Verifying builds match on-chain manifest (requires network access)
-  # What it does: Builds and compares against registered on-chain identity
+  # Web2 equivalent: Verifying a Docker image hash matches what's in production
+  #
+  # Use this to ensure your local build produces the exact same artifact as
+  # what's registered on-chain.
   verify:
     name: Verify Reproducible Build
     runs-on: ubuntu-latest
@@ -85,8 +88,10 @@ jobs:
   # ============================================================================
   # SCENARIO 4: Full Deployment (direct, single-key)
   # ============================================================================
-  # Use for: Testnet deployments or when single-key signing is acceptable
-  # What it does: Builds, updates on-chain config, and deploys to ROFL node
+  # Web2 equivalent: `docker build && docker push && kubectl apply`
+  #
+  # Use this for testnet or when a single deployer key is acceptable.
+  # The wallet secret signs and broadcasts transactions directly.
   # Requires: WALLET_SECRET with sufficient balance for gas fees
   deploy:
     name: Full Deployment
@@ -111,11 +116,12 @@ jobs:
   # ============================================================================
   # SCENARIO 5: Safe Multisig Deployment (https://safe.oasis.io/)
   # ============================================================================
-  # Use for: Production deployments requiring multisig approval
-  # What it does:
-  #   1. Builds the ROFL app
-  #   2. Generates unsigned CBOR transaction
-  #   3. Proposes transaction to Safe for multisig approval
+  # Web2 equivalent: Creating a deployment PR that requires multiple approvals
+  #
+  # Use this for production deployments where no single person should have
+  # deploy access. The transaction is proposed to a Safe multisig wallet,
+  # and other team members approve it via the Safe UI before it executes.
+  #
   # Requires:
   #   - SAFE_PROPOSER_KEY: Private key of an EOA that is a Safe owner
   #   - Safe variables configured (address, RPC, service URL)
@@ -133,7 +139,6 @@ jobs:
         with:
           network: testnet
           deployment: testnet
-          offline: true
           unsigned: true
           format: cbor
           update_output_file: update.cbor
@@ -143,13 +148,16 @@ jobs:
           safe_proposer_key: ${{ secrets.SAFE_PROPOSER_KEY }}
           safe_rpc_url: ${{ vars.SAFE_RPC_URL }}
           safe_service_url: ${{ vars.SAFE_SERVICE_URL }}
-          safe_chain_id: '23294'  # Oasis Sapphire Mainnet
+          safe_chain_id: '23294'
 
   # ============================================================================
   # SCENARIO 6: Generate Unsigned Transactions (manual signing)
   # ============================================================================
-  # Use for: When you need to sign transactions offline or with hardware wallet
-  # What it does: Generates CBOR files for manual signing
+  # Web2 equivalent: Generating deployment manifests for manual review/apply
+  #
+  # Use this when you need to sign transactions outside of CI, such as with
+  # a hardware wallet (Ledger) or air-gapped machine. Downloads the CBOR
+  # files as artifacts, which you then sign and broadcast manually.
   offline-build:
     name: Generate Unsigned Transactions
     runs-on: ubuntu-latest
@@ -162,7 +170,6 @@ jobs:
         with:
           network: testnet
           deployment: testnet
-          offline: true
           unsigned: true
           format: cbor
           update_output_file: update.cbor
