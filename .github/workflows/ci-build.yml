@@ -1,40 +1,179 @@
+# ROFL GitHub Actions Examples
+#
+# This workflow demonstrates all common use cases for the ROFL build/deploy action.
+# Each job shows a different scenario - use the one that fits your needs.
+#
+# Required secrets (Settings > Secrets and variables > Actions > Secrets):
+#   - WALLET_SECRET: Mnemonic or private key for direct deployment
+#   - SAFE_PROPOSER_KEY: Private key of a Safe multisig owner (for Safe mode)
+#
+# Required variables (Settings > Secrets and variables > Actions > Variables):
+#   - SAFE_ADDRESS: Safe multisig contract address
+#   - SAFE_RPC_URL: RPC endpoint (e.g., https://sapphire.oasis.io)
+#   - SAFE_SERVICE_URL: Safe transaction service URL
 
-  name: ROFL tests
+name: ROFL CI/CD Examples
 
-  on:
-    push:
-      branches: [main]
-    pull_request:
-    workflow_dispatch:
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
 
-  jobs:
-    build:
-      runs-on: ubuntu-latest
-      steps:
-        - name: Checkout
-          uses: actions/checkout@v4
+jobs:
+  # ============================================================================
+  # SCENARIO 1: Validate Only (fastest)
+  # ============================================================================
+  # Use for: Quick CI checks on every PR
+  # What it does: Validates rofl.yaml and compose.yaml without building
+  validate:
+    name: Validate ROFL Config
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-        - name: Build ROFL
-          uses: oasisprotocol/build-deploy-rofl-action@ptrus/initial-impl
-          with:
-            network: testnet
-            deployment: testnet
-            skip_update: true
-            skip_deploy: true
+      - name: Validate ROFL configuration
+        uses: oasisprotocol/build-deploy-rofl-action@ptrus/initial-impl
+        with:
+          network: testnet
+          deployment: testnet
+          only_validate: true
 
-    verify:
-      runs-on: ubuntu-latest
-      steps:
-        - name: Checkout
-          uses: actions/checkout@v4
+  # ============================================================================
+  # SCENARIO 2: Build Only
+  # ============================================================================
+  # Use for: CI builds to ensure the ROFL app compiles successfully
+  # What it does: Builds the ORC bundle without deploying
+  build:
+    name: Build ROFL App
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-        - name: Verify ROFL
-          uses: oasisprotocol/build-deploy-rofl-action@ptrus/initial-impl
-          with:
-            network: testnet
-            deployment: testnet
-            offline: false
-            verify: true
-            skip_update: true
-            skip_deploy: true
+      - name: Build ROFL app
+        uses: oasisprotocol/build-deploy-rofl-action@ptrus/initial-impl
+        with:
+          network: testnet
+          deployment: testnet
+          offline: true
+          skip_update: true
+          skip_deploy: true
 
+  # ============================================================================
+  # SCENARIO 3: Build + Verify (reproducible builds)
+  # ============================================================================
+  # Use for: Verifying builds match on-chain manifest (requires network access)
+  # What it does: Builds and compares against registered on-chain identity
+  verify:
+    name: Verify Reproducible Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build and verify against on-chain manifest
+        uses: oasisprotocol/build-deploy-rofl-action@ptrus/initial-impl
+        with:
+          network: testnet
+          deployment: testnet
+          verify: true
+          skip_update: true
+          skip_deploy: true
+
+  # ============================================================================
+  # SCENARIO 4: Full Deployment (direct, single-key)
+  # ============================================================================
+  # Use for: Testnet deployments or when single-key signing is acceptable
+  # What it does: Builds, updates on-chain config, and deploys to ROFL node
+  # Requires: WALLET_SECRET with sufficient balance for gas fees
+  deploy:
+    name: Full Deployment
+    runs-on: ubuntu-latest
+    # Only deploy on main branch pushes, not PRs
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build and deploy ROFL app
+        uses: oasisprotocol/build-deploy-rofl-action@ptrus/initial-impl
+        with:
+          network: testnet
+          deployment: testnet
+          wallet_account: deployer
+          wallet_import: true
+          wallet_secret: ${{ secrets.WALLET_SECRET }}
+          wallet_algorithm: secp256k1-bip44
+          verbose: true
+
+  # ============================================================================
+  # SCENARIO 5: Safe Multisig Deployment (https://safe.oasis.io/)
+  # ============================================================================
+  # Use for: Production deployments requiring multisig approval
+  # What it does:
+  #   1. Builds the ROFL app
+  #   2. Generates unsigned CBOR transaction
+  #   3. Proposes transaction to Safe for multisig approval
+  # Requires:
+  #   - SAFE_PROPOSER_KEY: Private key of an EOA that is a Safe owner
+  #   - Safe variables configured (address, RPC, service URL)
+  safe-proposal:
+    name: Safe Multisig Proposal
+    runs-on: ubuntu-latest
+    # Only propose on main branch pushes
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build and propose to Safe multisig
+        uses: oasisprotocol/build-deploy-rofl-action@ptrus/initial-impl
+        with:
+          network: testnet
+          deployment: testnet
+          offline: true
+          unsigned: true
+          format: cbor
+          update_output_file: update.cbor
+          skip_deploy: true
+          # Safe multisig configuration
+          safe_address: ${{ vars.SAFE_ADDRESS }}
+          safe_proposer_key: ${{ secrets.SAFE_PROPOSER_KEY }}
+          safe_rpc_url: ${{ vars.SAFE_RPC_URL }}
+          safe_service_url: ${{ vars.SAFE_SERVICE_URL }}
+          safe_chain_id: '23294'  # Oasis Sapphire Mainnet
+
+  # ============================================================================
+  # SCENARIO 6: Generate Unsigned Transactions (manual signing)
+  # ============================================================================
+  # Use for: When you need to sign transactions offline or with hardware wallet
+  # What it does: Generates CBOR files for manual signing
+  offline-build:
+    name: Generate Unsigned Transactions
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build and generate unsigned transactions
+        uses: oasisprotocol/build-deploy-rofl-action@ptrus/initial-impl
+        with:
+          network: testnet
+          deployment: testnet
+          offline: true
+          unsigned: true
+          format: cbor
+          update_output_file: update.cbor
+          deploy_output_file: deploy.cbor
+          skip_deploy: true
+
+      - name: Upload transaction files
+        uses: actions/upload-artifact@v4
+        with:
+          name: rofl-transactions
+          path: |
+            update.cbor
+            deploy.cbor
+          retention-days: 7
