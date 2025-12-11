@@ -9,8 +9,6 @@
 #
 # Required variables (Settings > Secrets and variables > Actions > Variables):
 #   - SAFE_ADDRESS: Safe multisig contract address
-#   - SAFE_RPC_URL: RPC endpoint (e.g., https://sapphire.oasis.io)
-#   - SAFE_SERVICE_URL: Safe transaction service URL
 
 name: ROFL CI/CD Examples
 
@@ -143,12 +141,9 @@ jobs:
           format: cbor
           update_output_file: update.cbor
           skip_deploy: true
-          # Safe multisig configuration
+          # Safe multisig configuration (RPC, service URL, and chain ID default to Sapphire mainnet)
           safe_address: ${{ vars.SAFE_ADDRESS }}
           safe_proposer_key: ${{ secrets.SAFE_PROPOSER_KEY }}
-          safe_rpc_url: ${{ vars.SAFE_RPC_URL }}
-          safe_service_url: ${{ vars.SAFE_SERVICE_URL }}
-          safe_chain_id: '23294'
 
   # ============================================================================
   # SCENARIO 6: Generate Unsigned Transactions (manual signing)
