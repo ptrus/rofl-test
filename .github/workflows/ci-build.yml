@@ -29,11 +29,8 @@ jobs:
     name: Validate ROFL Config
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Validate ROFL configuration
-        uses: oasisprotocol/build-deploy-rofl-action@ptrus/initial-impl
+      - uses: actions/checkout@v4
+      - uses: oasisprotocol/build-deploy-rofl-action@ptrus/initial-impl
         with:
           network: testnet
           deployment: testnet
@@ -49,14 +46,12 @@ jobs:
     name: Build ROFL App
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Build ROFL app
-        uses: oasisprotocol/build-deploy-rofl-action@ptrus/initial-impl
+      - uses: actions/checkout@v4
+      - uses: oasisprotocol/build-deploy-rofl-action@ptrus/initial-impl
         with:
           network: testnet
           deployment: testnet
+          update_manifest: true
           skip_update: true
           skip_deploy: true
 
@@ -66,25 +61,45 @@ jobs:
   # Web2 equivalent: Verifying a Docker image hash matches what's in production
   #
   # Use this to ensure your local build produces the exact same artifact as
-  # what's registered on-chain.
+  # what's registered on-chain. Verification is enabled by default.
   verify:
     name: Verify Reproducible Build
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Build and verify against on-chain manifest
-        uses: oasisprotocol/build-deploy-rofl-action@ptrus/initial-impl
+      - uses: actions/checkout@v4
+      - uses: oasisprotocol/build-deploy-rofl-action@ptrus/initial-impl
         with:
           network: testnet
           deployment: testnet
-          verify: true
           skip_update: true
           skip_deploy: true
 
   # ============================================================================
-  # SCENARIO 4: Full Deployment (direct, single-key)
+  # SCENARIO 4: Test Deployment (auto-update manifest)
+  # ============================================================================
+  # Web2 equivalent: Dev environment with auto-deploy on every push
+  #
+  # Use this for test/dev environments where you want automatic enclave ID updates.
+  # WARNING: Not recommended for production - enclave IDs should be reviewed.
+  test-deploy:
+    name: Test Deployment (auto-update)
+    runs-on: ubuntu-latest
+    # Only on main branch pushes, not PRs
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oasisprotocol/build-deploy-rofl-action@ptrus/initial-impl
+        with:
+          network: testnet
+          deployment: testnet
+          update_manifest: true
+          wallet_account: ci_account
+          wallet_import: true
+          wallet_secret: ${{ secrets.WALLET_SECRET }}
+          wallet_algorithm: secp256k1-bip44
+
+  # ============================================================================
+  # SCENARIO 5: Full Deployment (production, single-key)
   # ============================================================================
   # Web2 equivalent: `docker build && docker push && kubectl apply`
   #
@@ -97,22 +112,19 @@ jobs:
     # Only deploy on main branch pushes, not PRs
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Build and deploy ROFL app
-        uses: oasisprotocol/build-deploy-rofl-action@ptrus/initial-impl
+      - uses: actions/checkout@v4
+      - uses: oasisprotocol/build-deploy-rofl-action@ptrus/initial-impl
         with:
           network: testnet
           deployment: testnet
-          wallet_account: deployer
+          wallet_account: ci_account
           wallet_import: true
           wallet_secret: ${{ secrets.WALLET_SECRET }}
           wallet_algorithm: secp256k1-bip44
           verbose: true
 
   # ============================================================================
-  # SCENARIO 5: Safe Multisig Deployment (https://safe.oasis.io/)
+  # SCENARIO 6: Safe Multisig Deployment (https://safe.oasis.io/)
   # ============================================================================
   # Web2 equivalent: Creating a deployment PR that requires multiple approvals
   #
@@ -122,31 +134,28 @@ jobs:
   #
   # Requires:
   #   - SAFE_PROPOSER_KEY: Private key of an EOA that is a Safe owner
-  #   - Safe variables configured (address, RPC, service URL)
+  #   - SAFE_ADDRESS variable configured
   safe-proposal:
     name: Safe Multisig Proposal
     runs-on: ubuntu-latest
     # Only propose on main branch pushes
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Build and propose to Safe multisig
-        uses: oasisprotocol/build-deploy-rofl-action@ptrus/initial-impl
+      - uses: actions/checkout@v4
+      - uses: oasisprotocol/build-deploy-rofl-action@ptrus/initial-impl
         with:
           network: testnet
           deployment: testnet
+          update_manifest: true
           unsigned: true
           format: cbor
           update_output_file: update.cbor
           skip_deploy: true
-          # Safe multisig configuration (RPC, service URL, and chain ID default to Sapphire mainnet)
           safe_address: ${{ vars.SAFE_ADDRESS }}
           safe_proposer_key: ${{ secrets.SAFE_PROPOSER_KEY }}
 
   # ============================================================================
-  # SCENARIO 6: Generate Unsigned Transactions (manual signing)
+  # SCENARIO 7: Generate Unsigned Transactions (manual signing)
   # ============================================================================
   # Web2 equivalent: Generating deployment manifests for manual review/apply
   #
@@ -157,22 +166,19 @@ jobs:
     name: Generate Unsigned Transactions
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Build and generate unsigned transactions
-        uses: oasisprotocol/build-deploy-rofl-action@ptrus/initial-impl
+      - uses: actions/checkout@v4
+      - uses: oasisprotocol/build-deploy-rofl-action@ptrus/initial-impl
         with:
           network: testnet
           deployment: testnet
+          update_manifest: true
           unsigned: true
           format: cbor
           update_output_file: update.cbor
           deploy_output_file: deploy.cbor
           skip_deploy: true
 
-      - name: Upload transaction files
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: rofl-transactions
           path: |

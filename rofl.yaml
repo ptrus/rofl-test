@@ -24,7 +24,7 @@ deployments:
     app_id: rofl1qp55evqls4qg6cjw5fnlv4al9ptc0fsakvxvd9uw
     network: testnet
     paratime: sapphire
-    admin: ptrus_testnet
+    admin: ci_account
     oci_repository: ghcr.io/kostko/demo-rofl:default
     trust_root:
       height: 24805610
