@@ -1,6 +1,7 @@
 # ROFL GitHub Actions Examples
 #
 # This workflow demonstrates all common use cases for the ROFL build/deploy action.
+# Version: 2
 # Each job shows a different scenario - use the one that fits your needs.
 #
 # Required secrets (Settings > Secrets and variables > Actions > Secrets):
@@ -149,7 +150,8 @@ jobs:
           update_manifest: true
           unsigned: true
           format: cbor
-          update_output_file: update.cbor
+          update_output_file: safe_update_unsigned.tx
+          deploy_output_file: safe_deploy_unsigned.tx
           skip_deploy: true
           safe_address: ${{ vars.SAFE_ADDRESS }}
           safe_proposer_key: ${{ secrets.SAFE_PROPOSER_KEY }}
@@ -174,14 +176,14 @@ jobs:
           update_manifest: true
           unsigned: true
           format: cbor
-          update_output_file: update.cbor
-          deploy_output_file: deploy.cbor
+          update_output_file: offline_update_unsigned.tx
+          deploy_output_file: offline_deploy_unsigned.tx
           skip_deploy: true
 
       - uses: actions/upload-artifact@v4
         with:
-          name: rofl-transactions
+          name: test-rofl-offline-unsigned-txs
           path: |
-            update.cbor
-            deploy.cbor
+            offline_update_unsigned.tx
+            offline_deploy_unsigned.tx
           retention-days: 7
