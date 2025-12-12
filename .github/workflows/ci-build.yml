@@ -96,7 +96,7 @@ jobs:
           wallet_account: ci_account
           wallet_import: true
           wallet_secret: ${{ secrets.WALLET_SECRET }}
-          wallet_algorithm: secp256k1-bip44
+          wallet_algorithm: secp256k1-raw
 
   # ============================================================================
   # SCENARIO 5: Full Deployment (production, single-key)
@@ -120,7 +120,7 @@ jobs:
           wallet_account: ci_account
           wallet_import: true
           wallet_secret: ${{ secrets.WALLET_SECRET }}
-          wallet_algorithm: secp256k1-bip44
+          wallet_algorithm: secp256k1-raw
           verbose: true
 
   # ============================================================================
