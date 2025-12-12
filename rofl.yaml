@@ -20,6 +20,72 @@ artifacts:
     runtime: https://github.com/oasisprotocol/oasis-sdk/releases/download/rofl-containers%2Fv0.8.5/rofl-containers#b63e85b33d37f1c762aef85125617d87d79763c3fe3f30815301f0f9fe57179d
     compose: compose.yaml
 deployments:
+  offline:
+    app_id: rofl1qp55evqls4qg6cjw5fnlv4al9ptc0fsakvxvd9uw
+    network: testnet
+    paratime: sapphire
+    admin: 0x2ECd2bc7344a15996698B6C2Ff62ba4332FEC83f
+    oci_repository: ghcr.io/kostko/demo-rofl:default
+    trust_root:
+      height: 24805610
+    policy:
+      quotes:
+        pcs:
+          tcb_validity_period: 30
+          min_tcb_evaluation_data_number: 18
+          tdx: {}
+      enclaves:
+        - id: 9pi8Kav8O5YHyTwj73Ppuu84A4zj3UYX3rTYELX65K4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
+        - id: nelwjlfFf0vjTsicSv+SQtTru+WDNPVrsVRXDZ4h8dMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
+      endorsements:
+        - and:
+            - or:
+                - provider: oasis1qrfeadn03ljm0kfx8wx0d5zf6kj79pxqvv0dukdm
+                - provider: oasis1qp2ens0hsp7gh23wajxa4hpetkdek3swyyulyrmz
+            - provider_instance_admin: oasis1qpwaggvmhwq5uk40clase3knt655nn2tdy39nz2f
+      fees: endorsing_node
+      max_expiration: 3
+    machines:
+      default:
+        provider: rofl_provider_testnet_a
+        offer: test
+        id: "0000000000000003"
+        permissions:
+          log.view:
+            - oasis1qqrxl63c4w58hysdeyz8wshwdgukex6yrg50g8ug
+  safe:
+    app_id: rofl1qp55evqls4qg6cjw5fnlv4al9ptc0fsakvxvd9uw
+    network: testnet
+    paratime: sapphire
+    admin: 0x2ECd2bc7344a15996698B6C2Ff62ba4332FEC83f
+    oci_repository: ghcr.io/kostko/demo-rofl:default
+    trust_root:
+      height: 24805610
+    policy:
+      quotes:
+        pcs:
+          tcb_validity_period: 30
+          min_tcb_evaluation_data_number: 18
+          tdx: {}
+      enclaves:
+        - id: 9pi8Kav8O5YHyTwj73Ppuu84A4zj3UYX3rTYELX65K4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
+        - id: nelwjlfFf0vjTsicSv+SQtTru+WDNPVrsVRXDZ4h8dMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
+      endorsements:
+        - and:
+            - or:
+                - provider: oasis1qrfeadn03ljm0kfx8wx0d5zf6kj79pxqvv0dukdm
+                - provider: oasis1qp2ens0hsp7gh23wajxa4hpetkdek3swyyulyrmz
+            - provider_instance_admin: oasis1qpwaggvmhwq5uk40clase3knt655nn2tdy39nz2f
+      fees: endorsing_node
+      max_expiration: 3
+    machines:
+      default:
+        provider: rofl_provider_testnet_a
+        offer: test
+        id: "0000000000000003"
+        permissions:
+          log.view:
+            - oasis1qqrxl63c4w58hysdeyz8wshwdgukex6yrg50g8ug
   testnet:
     app_id: rofl1qp55evqls4qg6cjw5fnlv4al9ptc0fsakvxvd9uw
     network: testnet
@@ -54,4 +120,4 @@ deployments:
           log.view:
             - oasis1qqrxl63c4w58hysdeyz8wshwdgukex6yrg50g8ug
 tooling:
-  version: 0.17.1-git1323206
+  version: 0.18.0

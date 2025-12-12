@@ -145,7 +145,7 @@ jobs:
       - uses: oasisprotocol/build-deploy-rofl-action@ptrus/initial-impl
         with:
           network: testnet
-          deployment: testnet
+          deployment: safe
           update_manifest: true
           unsigned: true
           format: cbor
@@ -170,7 +170,7 @@ jobs:
       - uses: oasisprotocol/build-deploy-rofl-action@ptrus/initial-impl
         with:
           network: testnet
-          deployment: testnet
+          deployment: offline
           update_manifest: true
           unsigned: true
           format: cbor
