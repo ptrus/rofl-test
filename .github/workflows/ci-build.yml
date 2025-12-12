@@ -1,7 +1,6 @@
 # ROFL GitHub Actions Examples
 #
 # This workflow demonstrates all common use cases for the ROFL build/deploy action.
-# Version: 2
 # Each job shows a different scenario - use the one that fits your needs.
 #
 # Required secrets (Settings > Secrets and variables > Actions > Secrets):
@@ -136,6 +135,10 @@ jobs:
   # Requires:
   #   - SAFE_PROPOSER_KEY: Private key of an EOA that is a Safe owner
   #   - SAFE_ADDRESS variable configured
+  #
+  # Network configuration:
+  #   Testnet: safe_rpc_url: https://testnet.sapphire.oasis.io, safe_chain_id: '23295'
+  #   Mainnet: safe_rpc_url: https://sapphire.oasis.io, safe_chain_id: '23294' (defaults)
   safe-proposal:
     name: Safe Multisig Proposal
     runs-on: ubuntu-latest
@@ -155,6 +158,9 @@ jobs:
           skip_deploy: true
           safe_address: ${{ vars.SAFE_ADDRESS }}
           safe_proposer_key: ${{ secrets.SAFE_PROPOSER_KEY }}
+          # Testnet config (remove these for mainnet - defaults are mainnet)
+          safe_rpc_url: https://testnet.sapphire.oasis.io
+          safe_chain_id: '23295'
 
   # ============================================================================
   # SCENARIO 7: Generate Unsigned Transactions (manual signing)
