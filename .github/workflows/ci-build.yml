@@ -133,7 +133,7 @@ jobs:
   # and other team members approve it via the Safe UI before it executes.
   #
   # Requires:
-  #   - SAFE_PROPOSER_KEY: Private key of an EOA that is a Safe owner
+  #   - SAFE_PROPOSER_KEY: Private key of an EOA that is a Safe owner or proposer
   #   - SAFE_ADDRESS variable configured
   #
   # Network configuration:
@@ -192,4 +192,4 @@ jobs:
           path: |
             offline_update_unsigned.tx
             offline_deploy_unsigned.tx
-          retention-days: 7
+          retention-days: 8
