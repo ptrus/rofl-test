@@ -158,9 +158,7 @@ jobs:
           skip_deploy: true
           safe_address: ${{ vars.SAFE_ADDRESS }}
           safe_proposer_key: ${{ secrets.SAFE_PROPOSER_KEY }}
-          # Testnet config (remove these for mainnet - defaults are mainnet)
-          safe_rpc_url: https://testnet.sapphire.oasis.io
-          safe_chain_id: '23295'
+          # RPC URL, service URL, and chain ID are auto-detected from network
 
   # ============================================================================
   # SCENARIO 7: Generate Unsigned Transactions (manual signing)
@@ -193,3 +191,39 @@ jobs:
             offline_update_unsigned.tx
             offline_deploy_unsigned.tx
           retention-days: 8
+
+  # ============================================================================
+  # SCENARIO 8: Check for Updates
+  # ============================================================================
+  # Web2 equivalent: Dependabot-style automated dependency updates
+  #
+  # Use this to check for artifact updates and create a PR when updates are
+  # available. Can be triggered manually or add a schedule trigger:
+  #   on:
+  #     schedule:
+  #       - cron: '0 9 * * 1'  # Weekly on Monday at 9am
+  #
+  # Requires:
+  #   - permissions: contents: write, pull-requests: write
+  #   - GITHUB_TOKEN (automatically provided)
+  check-updates:
+    name: Check for Updates
+    runs-on: ubuntu-latest
+    # Only run on manual trigger - add schedule trigger above if needed
+    if: github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oasisprotocol/build-deploy-rofl-action@ptrus/initial-impl
+        id: check
+        with:
+          check_updates: true
+          create_update_pr: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Show results
+        run: |
+          echo "Updates available: ${{ steps.check.outputs.updates_available }}"
+          echo "PR URL: ${{ steps.check.outputs.update_pr_url }}"
