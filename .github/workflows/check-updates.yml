@@ -1,0 +1,38 @@
+# Check for ROFL Artifact Updates
+#
+# This workflow checks for updates to ROFL artifacts (tooling, runtime versions)
+# and creates a PR when updates are available.
+#
+# Trigger: Manual (workflow_dispatch) or scheduled (uncomment cron below)
+#
+# To enable scheduled runs, uncomment the schedule trigger:
+#   schedule:
+#     - cron: '0 9 * * 1'  # Weekly on Monday at 9am UTC
+
+name: Check ROFL Updates
+
+on:
+  workflow_dispatch:
+  # schedule:
+  #   - cron: '0 9 * * 1'
+
+jobs:
+  check-updates:
+    name: Check for Updates
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oasisprotocol/build-deploy-rofl-action@ptrus/initial-impl
+        id: check
+        with:
+          check_updates: true
+          create_update_pr: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Show results
+        run: |
+          echo "Updates available: ${{ steps.check.outputs.updates_available }}"
+          echo "PR URL: ${{ steps.check.outputs.update_pr_url }}"

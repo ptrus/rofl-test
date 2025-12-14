@@ -81,6 +81,11 @@ jobs:
   #
   # Use this for test/dev environments where you want automatic enclave ID updates.
   # WARNING: Not recommended for production - enclave IDs should be reviewed.
+  #
+  # For production, trigger deployments on tags instead:
+  #   on:
+  #     push:
+  #       tags: ['v*']
   test-deploy:
     name: Test Deployment (auto-update)
     runs-on: ubuntu-latest
@@ -106,6 +111,11 @@ jobs:
   # Use this for testnet or when a single deployer key is acceptable.
   # The wallet secret signs and broadcasts transactions directly.
   # Requires: WALLET_SECRET with sufficient balance for gas fees
+  #
+  # For production, trigger deployments on tags instead of every push:
+  #   on:
+  #     push:
+  #       tags: ['v*']
   deploy:
     name: Full Deployment
     runs-on: ubuntu-latest
@@ -139,6 +149,11 @@ jobs:
   # Network configuration:
   #   Testnet: safe_rpc_url: https://testnet.sapphire.oasis.io, safe_chain_id: '23295'
   #   Mainnet: safe_rpc_url: https://sapphire.oasis.io, safe_chain_id: '23294' (defaults)
+  #
+  # For production, trigger proposals on tags instead of every push:
+  #   on:
+  #     push:
+  #       tags: ['v*']
   safe-proposal:
     name: Safe Multisig Proposal
     runs-on: ubuntu-latest
@@ -192,38 +207,3 @@ jobs:
             offline_deploy_unsigned.tx
           retention-days: 8
 
-  # ============================================================================
-  # SCENARIO 8: Check for Updates
-  # ============================================================================
-  # Web2 equivalent: Dependabot-style automated dependency updates
-  #
-  # Use this to check for artifact updates and create a PR when updates are
-  # available. Can be triggered manually or add a schedule trigger:
-  #   on:
-  #     schedule:
-  #       - cron: '0 9 * * 1'  # Weekly on Monday at 9am
-  #
-  # Requires:
-  #   - permissions: contents: write, pull-requests: write
-  #   - GITHUB_TOKEN (automatically provided)
-  check-updates:
-    name: Check for Updates
-    runs-on: ubuntu-latest
-    # Only run on manual trigger - add schedule trigger above if needed
-    if: github.event_name == 'workflow_dispatch'
-    permissions:
-      contents: write
-      pull-requests: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: oasisprotocol/build-deploy-rofl-action@ptrus/initial-impl
-        id: check
-        with:
-          check_updates: true
-          create_update_pr: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Show results
-        run: |
-          echo "Updates available: ${{ steps.check.outputs.updates_available }}"
-          echo "PR URL: ${{ steps.check.outputs.update_pr_url }}"
