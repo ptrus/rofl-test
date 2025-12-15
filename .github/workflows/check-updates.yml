@@ -8,6 +8,10 @@
 # To enable scheduled runs, uncomment the schedule trigger:
 #   schedule:
 #     - cron: '0 9 * * 1'  # Weekly on Monday at 9am UTC
+#
+# IMPORTANT: You must enable "Allow GitHub Actions to create and approve pull requests"
+# in repository settings (Settings → Actions → General → Workflow permissions)
+# for PR creation to work.
 
 name: Check ROFL Updates
 
